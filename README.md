@@ -14,6 +14,8 @@ marche hors-ligne et sur téléphone. (Aucune installation.)
   - Filtres par chapitre (caput) et par catégorie
   - Auto-évaluation (système de boîtes : 5 bonnes réponses = mot acquis)
   - Raccourcis : `Espace` révéler · `1` je savais · `2` pas sûr · `←`/`→` naviguer
+- **Quiz** (style Kahoot) : QCM à 4 cases colorées, chrono, points selon la rapidité,
+  bonus de série 🔥, médaille + record en fin de partie. Touches `1`–`4` pour répondre.
 - **Liste & tri** : tableau complet, triable par colonne, recherche, export CSV.
 
 Les progrès sont stockés dans le navigateur (localStorage).
