@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Pegasus Novus — Vocabulaire</title>
+<style>
+  :root{
+    --ink:#2b2118; --ink-soft:#6b5d4f; --paper:#f6efe3; --paper-2:#fbf6ec;
+    --line:#e0d4bf; --accent:#9a3b2e; --accent-2:#2f6f5e; --gold:#b6863a;
+    --nl:#1f5d50; --shadow:0 6px 22px rgba(60,40,20,.12);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); background:linear-gradient(160deg,#f3e9d7,#efe4cf 60%,#ead9bd);
+    -webkit-text-size-adjust:100%;
+  }
+  .serif{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif}
+  .wrap{max-width:780px;margin:0 auto;padding:18px 16px 90px}
+  header{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:6px 2px 14px}
+  header h1{font-size:22px;margin:0;letter-spacing:.3px}
+  header h1 .pegasus{color:var(--accent)}
+  header .sub{color:var(--ink-soft);font-size:13px}
+
+  .tabs{display:flex;gap:6px;background:#00000008;padding:5px;border-radius:14px;margin-bottom:14px}
+  .tabs button{flex:1;border:0;background:transparent;padding:9px 8px;border-radius:10px;
+    font-size:14px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.15s}
+  .tabs button.active{background:var(--paper-2);color:var(--ink);box-shadow:var(--shadow)}
+
+  .panel{display:none}
+  .panel.active{display:block}
+
+  .controls{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px}
+  .field label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);font-weight:700}
+  select,input[type=search]{font:inherit}
+  select{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  input[type=search]{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%}
+  .chipbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font-size:13px;
+    cursor:pointer;color:var(--ink-soft);user-select:none;transition:.12s}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip.cap.on{background:var(--accent-2);border-color:var(--accent-2)}
+
+  .stats{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:2px 2px 12px;color:var(--ink-soft);font-size:13px}
+  .stats b{color:var(--ink)}
+  .bar{height:8px;border-radius:6px;background:#0000000f;overflow:hidden;flex:1;min-width:120px}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--gold))}
+
+  .card{background:var(--paper-2);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);
+    padding:26px 22px;min-height:340px;display:flex;flex-direction:column}
+  .card .meta{display:flex;justify-content:space-between;align-items:center;color:var(--ink-soft);font-size:12px}
+  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;
+    letter-spacing:.4px;background:#00000008;color:var(--ink-soft)}
+  .badge.cap{background:#2f6f5e1a;color:var(--accent-2)}
+  .face{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:10px;padding:8px 0}
+  .prompt{font-size:40px;line-height:1.15} .prompt.small{font-size:30px}
+  .prompt-sub{color:var(--ink-soft);font-size:16px;margin-top:-2px}
+  .hint{background:#b6863a14;border:1px dashed #b6863a66;border-radius:14px;padding:12px 16px;max-width:540px}
+  .hint .lab{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--gold);font-weight:800;margin-bottom:4px}
+  .hint .pont{font-size:19px}
+  .hint .frmean{color:var(--ink-soft);font-size:14px;margin-top:3px}
+  .answer{background:#1f5d500f;border:1px solid #1f5d5033;border-radius:16px;padding:16px 18px;max-width:540px}
+  .answer .lab{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--nl);font-weight:800;margin-bottom:5px}
+  .answer .nl{font-size:32px;color:var(--nl);line-height:1.15}
+  .placeholder{color:#b3a690;font-size:15px;font-style:italic}
+
+  .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .btn{flex:1;border:0;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;
+    box-shadow:var(--shadow);transition:transform .08s,filter .15s;min-width:120px}
+  .btn:active{transform:translateY(1px)}
+  .btn.reveal{background:var(--ink);color:var(--paper)}
+  .btn.know{background:var(--accent-2);color:#fff}
+  .btn.dunno{background:var(--accent);color:#fff}
+  .btn.ghost{background:#fff;color:var(--ink-soft);border:1px solid var(--line);box-shadow:none;flex:0 0 auto;min-width:54px;padding:14px 16px}
+  .keys{margin-top:10px;color:var(--ink-soft);font-size:12px;text-align:center}
+  .keys kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px;font-family:inherit}
+
+  .tablewrap{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto;box-shadow:var(--shadow)}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{position:sticky;top:0;background:#efe6d5;cursor:pointer;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-soft);user-select:none;white-space:nowrap}
+  th .arrow{opacity:.4;font-size:10px}
+  th.sorted .arrow{opacity:1;color:var(--accent)}
+  tr:last-child td{border-bottom:0}
+  td.num{color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  td.la{font-family:"Iowan Old Style",Palatino,Georgia,serif;font-weight:600}
+  td.la .gen{display:block;font-size:12px;font-weight:400;color:var(--ink-soft);font-family:inherit}
+  td.nl{color:var(--nl);font-weight:600}
+  td.pont{color:var(--ink-soft)}
+  .boxdot{display:inline-block;width:22px;text-align:center;border-radius:6px;font-size:12px;font-weight:700;padding:2px 0;background:#00000008;color:var(--ink-soft)}
+  .boxdot.b5{background:#2f6f5e22;color:var(--accent-2)}
+  .boxdot.b0{background:transparent;color:#c3b9a6}
+
+  .small-btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+  .muted{color:var(--ink-soft)}
+  .empty{text-align:center;color:var(--ink-soft);padding:40px 10px}
+  a{color:var(--accent)}
+  @media (max-width:520px){ .prompt{font-size:34px} .answer .nl{font-size:28px} th,td{padding:8px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="serif"><span class="pegasus">Pegasus Novus</span> · Vocabulaire</h1>
+    <span class="sub">latin → <i>pont français</i> → néerlandais</span>
+  </header>
+
+  <div class="tabs">
+    <button data-tab="study" class="active">🎴 Réviser</button>
+    <button data-tab="browse">📋 Liste &amp; tri</button>
+  </div>
+
+  <!-- ===================== STUDY ===================== -->
+  <section class="panel active" id="study">
+    <div class="controls">
+      <div class="row">
+        <div class="field">
+          <label>Sens de révision</label>
+          <select id="mode">
+            <option value="la-pont-nl">Latin → (pont FR) → Néerlandais</option>
+            <option value="la-nl">Latin → Néerlandais (direct)</option>
+            <option value="nl-la">Néerlandais → Latin</option>
+            <option value="fr-nl">Français → Néerlandais</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Ordre</label>
+          <select id="order">
+            <option value="priority">Priorité aux non-maîtrisés</option>
+            <option value="random">Aléatoire</option>
+            <option value="num">Par n° (pensum)</option>
+            <option value="alpha">Alphabétique (latin)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>Pensums</label>
+        <div class="chipbar" id="capChips"></div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>Catégories</label>
+        <div class="chipbar" id="typeChips"></div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <span>📚 <b id="stTotal">0</b> mots</span>
+      <span>🌱 <b id="stNew">0</b> neufs</span>
+      <span>✅ <b id="stMastered">0</b> maîtrisés</span>
+      <div class="bar"><i id="stBar" style="width:0%"></i></div>
+    </div>
+
+    <div class="card" id="card">
+      <div class="meta">
+        <span class="badge cap" id="cCap">pensum</span>
+        <span class="badge" id="cType">type</span>
+      </div>
+      <div class="face" id="face"></div>
+      <div class="actions" id="actions"></div>
+      <div class="keys">
+        <kbd>Espace</kbd> révéler · <kbd>1</kbd> je savais · <kbd>2</kbd> pas sûr · <kbd>←</kbd>/<kbd>→</kbd> naviguer
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== BROWSE ===================== -->
+  <section class="panel" id="browse">
+    <div class="controls">
+      <div class="row">
+        <div class="field" style="flex:2">
+          <label>Recherche</label>
+          <input type="search" id="search" placeholder="latin, français ou néerlandais…">
+        </div>
+        <div class="field" style="flex:0 0 auto;align-self:flex-end">
+          <button class="small-btn" id="exportCsv">⬇︎ Exporter CSV</button>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>Catégories</label>
+        <div class="chipbar" id="typeChips2"></div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>Pensums</label>
+        <div class="chipbar" id="capChips2"></div>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table id="tbl">
+        <thead><tr>
+          <th data-k="n">N° <span class="arrow">▲</span></th>
+          <th data-k="la">Latin <span class="arrow">▲</span></th>
+          <th data-k="nl">Néerlandais <span class="arrow">▲</span></th>
+          <th data-k="type">Cat. <span class="arrow">▲</span></th>
+          <th data-k="fr">Français <span class="arrow">▲</span></th>
+          <th data-k="pont">Pont <span class="arrow">▲</span></th>
+          <th data-k="box">Niv. <span class="arrow">▲</span></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:12px;margin:10px 2px">
+      Clique un en-tête pour trier. Niveau = boîte de répétition (0 = neuf, 5 = acquis).
+      <a href="#" id="resetProg">Réinitialiser les progrès</a>
+    </p>
+  </section>
+</div>
+
+<script src="vocab.js"></script>
+<script>
+(function(){
+  "use strict";
+  const DATA = (window.VOCAB || []).map((w,i)=>({...w, id:'w'+(w.n ?? ((w.sectie||w.caput||'?')+'-'+(w.la||i)))}));
+  const TYPE_LABEL = {subst:'Nom',ww:'Verbe',adj:'Adjectif',adv:'Adverbe',voorz:'Préposition',
+    vnw:'Pronom',vw:'Conjonction',telw:'Numéral',naam:'Nom propre',uitdr:'Expression',other:'Autre'};
+  const $ = s=>document.querySelector(s);
+  const LS = {
+    get:(k,d)=>{try{return JSON.parse(localStorage.getItem('pegasus.'+k)) ?? d}catch(e){return d}},
+    set:(k,v)=>localStorage.setItem('pegasus.'+k, JSON.stringify(v))
+  };
+
+  let progress = LS.get('progress', {});           // id -> {box, seen, ok, ko}
+  let settings = LS.get('settings', {});
+  settings.mode  = settings.mode  || 'la-pont-nl';
+  settings.order = settings.order || 'priority';
+  const prog = id => progress[id] || (progress[id]={box:0,seen:0,ok:0,ko:0});
+  const saveProg = ()=>LS.set('progress',progress);
+  const saveSet  = ()=>LS.set('settings',settings);
+
+  function secKey(s){const p=String(s).split('.');return [parseInt(p[0])||0, parseInt(p[1])||0];}
+  const ALL_SEC   = [...new Set(DATA.map(w=>w.sectie||('Caput '+w.caput)))].sort((a,b)=>{const A=secKey(a),B=secKey(b);return A[0]-B[0]||A[1]-B[1];});
+  const ALL_TYPES = [...new Set(DATA.map(w=>w.type))];
+
+  // Si l'ensemble des pensums/catégories change (nouvelles données chargées), on
+  // réinitialise les filtres concernés à « tout » ; sinon on garde le choix de l'utilisateur.
+  const validSub = (arr,all)=> Array.isArray(arr)&&arr.length ? arr.filter(x=>all.includes(x)) : [...all];
+  const secSig = ALL_SEC.join('|'), typeSig = ALL_TYPES.join('|');
+  if(settings.secSig  !== secSig ){ settings.secSig  = secSig;  settings.sec   = [...ALL_SEC];   settings.sec2   = [...ALL_SEC]; }
+  if(settings.typeSig !== typeSig){ settings.typeSig = typeSig; settings.types = [...ALL_TYPES]; settings.types2 = [...ALL_TYPES]; }
+  settings.sec    = validSub(settings.sec,    ALL_SEC);
+  settings.types  = validSub(settings.types,  ALL_TYPES);
+  settings.sec2   = validSub(settings.sec2,   ALL_SEC);
+  settings.types2 = validSub(settings.types2, ALL_TYPES);
+  saveSet();
+
+  /* ---------- chips ---------- */
+  function buildChips(host, items, selected, label, onToggle, cls){
+    host.innerHTML='';
+    const mk=(val,txt)=>{
+      const c=document.createElement('span');
+      c.className='chip '+(cls||'')+(selected.includes(val)?' on':'');
+      c.textContent=txt; c.onclick=()=>onToggle(val);
+      host.appendChild(c);
+    };
+    mk('__all','Tous');
+    host.firstChild.className='chip '+(cls||'')+(selected.length===items.length?' on':'');
+    host.firstChild.onclick=()=>{ if(selected.length===items.length){selected.length=0;} else {selected.length=0; selected.push(...items);} onToggle(); };
+    items.forEach(v=>mk(v, label(v)));
+  }
+  function refreshChips(){
+    buildChips($('#capChips'),  ALL_SEC,   settings.sec,   v=>v, v=>{ if(v!==undefined)toggle(settings.sec,v);   saveSet(); refreshChips(); newSession(); }, 'cap');
+    buildChips($('#typeChips'), ALL_TYPES, settings.types, v=>TYPE_LABEL[v]||v, v=>{ if(v!==undefined)toggle(settings.types,v); saveSet(); refreshChips(); newSession(); });
+    buildChips($('#typeChips2'),ALL_TYPES, settings.types2,v=>TYPE_LABEL[v]||v, v=>{ if(v!==undefined)toggle(settings.types2,v); saveSet(); refreshChips(); renderTable(); });
+    buildChips($('#capChips2'), ALL_SEC,   settings.sec2,  v=>v, v=>{ if(v!==undefined)toggle(settings.sec2,v);  saveSet(); refreshChips(); renderTable(); }, 'cap');
+  }
+  function toggle(arr,v){ const i=arr.indexOf(v); i<0?arr.push(v):arr.splice(i,1); }
+
+  /* ---------- session ---------- */
+  let session=[], idx=0, stage=0;
+  const MODES={
+    'la-pont-nl':{faces:['la','pont','nl']},
+    'la-nl':{faces:['la','nl']},
+    'nl-la':{faces:['nl','la']},
+    'fr-nl':{faces:['fr','nl']},
+  };
+  function filtered(){
+    return DATA.filter(w=>settings.sec.includes(w.sectie||('Caput '+w.caput)) && settings.types.includes(w.type));
+  }
+  function newSession(){
+    let list=filtered();
+    const o=settings.order;
+    if(o==='random') list=shuffle(list.slice());
+    else if(o==='num') list=list.slice().sort((a,b)=>(a.n||0)-(b.n||0));
+    else if(o==='alpha') list=list.slice().sort((a,b)=>(a.la||'').localeCompare(b.la||''));
+    else list=shuffle(list.slice()).sort((a,b)=> prog(a.id).box-prog(b.id).box || prog(a.id).seen-prog(b.id).seen);
+    session=list; idx=0; stage=0; renderStats(); render();
+  }
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+  /* ---------- render card ---------- */
+  function faceHTML(kind,w,visible){
+    if(!visible) return '<div class="placeholder">· · ·</div>';
+    if(kind==='la')   return `<div class="prompt serif">${esc(w.la)}</div>`+(w.gen?`<div class="prompt-sub serif">${esc(w.gen)}</div>`:'');
+    if(kind==='fr')   return `<div class="prompt small">${esc(w.fr)}</div>`;
+    if(kind==='pont') return `<div class="hint"><div class="lab">💡 pont français</div>
+        <div class="pont serif">${esc(w.pont || '—')}</div>
+        <div class="frmean">sens : ${esc(w.fr)}</div></div>`;
+    if(kind==='nl')   return `<div class="answer"><div class="lab">🇳🇱 néerlandais</div>
+        <div class="nl serif">${esc(w.nl)}</div></div>`;
+    return '';
+  }
+  function render(){
+    if(!session.length){ $('#face').innerHTML='<div class="empty">Aucun mot pour ce filtre.<br>Active des pensums ou catégories ci-dessus.</div>';
+      $('#actions').innerHTML=''; $('#cCap').textContent='—'; $('#cType').textContent=''; return; }
+    const w=session[idx]; const faces=MODES[settings.mode].faces;
+    $('#cCap').textContent = w.sectie ? ('Pensum '+w.sectie) : ('Caput '+(w.caput??'?'));
+    $('#cType').textContent = (TYPE_LABEL[w.type]||w.type) + (w.n?(' · n°'+w.n):'');
+    $('#face').innerHTML = faces.map((f,i)=>faceHTML(f,w,i<=stage)).join('');
+    const a=$('#actions'); a.innerHTML='';
+    const last = stage>=faces.length-1;
+    if(!last){
+      a.appendChild(button('btn reveal','Révéler  ▸',()=>{stage++;render();}));
+    } else {
+      a.appendChild(button('btn know','✅ Je savais',()=>grade(true)));
+      a.appendChild(button('btn dunno','↻ Pas sûr',()=>grade(false)));
+    }
+    a.appendChild(button('btn ghost','⏭',()=>next()));
+  }
+  function button(cls,txt,fn){const b=document.createElement('button');b.className=cls;b.textContent=txt;b.onclick=fn;return b;}
+  function grade(ok){
+    const p=prog(session[idx].id); p.seen++; ok?(p.ok++,p.box=Math.min(5,p.box+1)):(p.ko++,p.box=1);
+    saveProg(); renderStats(); next();
+  }
+  function next(){ if(!session.length)return; idx=(idx+1)%session.length; stage=0; if(idx===0 && settings.order==='priority') newSession(); else render(); }
+  function prev(){ if(!session.length)return; idx=(idx-1+session.length)%session.length; stage=0; render(); }
+
+  function renderStats(){
+    const f=filtered();
+    const mastered=f.filter(w=>prog(w.id).box>=5).length;
+    const neuf=f.filter(w=>prog(w.id).box===0).length;
+    $('#stTotal').textContent=f.length;
+    $('#stNew').textContent=neuf;
+    $('#stMastered').textContent=mastered;
+    $('#stBar').style.width=(f.length?Math.round(mastered/f.length*100):0)+'%';
+  }
+
+  /* ---------- table ---------- */
+  let sortKey='n', sortDir=1;
+  function renderTable(){
+    const q=($('#search').value||'').toLowerCase().trim();
+    let rows=DATA.filter(w=>settings.sec2.includes(w.sectie||('Caput '+w.caput)) && settings.types2.includes(w.type))
+      .filter(w=>!q || [w.la,w.gen,w.fr,w.nl,w.pont].join(' ').toLowerCase().includes(q));
+    rows.sort((a,b)=>{
+      let av,bv;
+      if(sortKey==='box'){av=prog(a.id).box;bv=prog(b.id).box;}
+      else if(sortKey==='n'){av=a.n||0;bv=b.n||0;}
+      else {av=(a[sortKey]??'');bv=(b[sortKey]??'');}
+      if(typeof av==='number') return (av-bv)*sortDir;
+      return String(av).localeCompare(String(bv))*sortDir;
+    });
+    const tb=$('#tbody'); tb.innerHTML='';
+    if(!rows.length){tb.innerHTML='<tr><td colspan="7" class="empty">Rien ne correspond.</td></tr>';}
+    rows.forEach(w=>{
+      const b=prog(w.id).box;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td class="num">${w.n??''}</td>
+        <td class="la">${esc(w.la)}${w.gen?`<span class="gen">${esc(w.gen)}</span>`:''}</td>
+        <td class="nl">${esc(w.nl)}</td>
+        <td>${esc(TYPE_LABEL[w.type]||w.type)}</td>
+        <td>${esc(w.fr||'')}</td>
+        <td class="pont">${esc(w.pont||'')}</td>
+        <td><span class="boxdot b${b}">${b}</span></td>`;
+      tb.appendChild(tr);
+    });
+    document.querySelectorAll('#tbl th').forEach(th=>{
+      th.classList.toggle('sorted', th.dataset.k===sortKey);
+      const ar=th.querySelector('.arrow'); if(ar) ar.textContent= th.dataset.k===sortKey ? (sortDir>0?'▲':'▼') : '▲';
+    });
+  }
+
+  /* ---------- wiring ---------- */
+  function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); $('#'+b.dataset.tab).classList.add('active');
+    if(b.dataset.tab==='browse') renderTable();
+  });
+
+  $('#mode').value=settings.mode;
+  $('#order').value=settings.order;
+  $('#mode').onchange=e=>{settings.mode=e.target.value;saveSet();stage=0;render();};
+  $('#order').onchange=e=>{settings.order=e.target.value;saveSet();newSession();};
+  $('#search').oninput=renderTable;
+  document.querySelectorAll('#tbl th').forEach(th=>th.onclick=()=>{
+    const k=th.dataset.k; if(k===sortKey) sortDir*=-1; else {sortKey=k;sortDir=1;} renderTable();
+  });
+  $('#exportCsv').onclick=()=>{
+    const rows=[['n','pensum','latin','forme','type','francais','pont','neerlandais','niveau']];
+    DATA.filter(w=>settings.sec2.includes(w.sectie||('Caput '+w.caput)) && settings.types2.includes(w.type))
+        .forEach(w=>rows.push([w.n,w.sectie,w.la,w.gen||'',w.type,w.fr||'',w.pont||'',w.nl,prog(w.id).box]));
+    const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'})); a.download='pegasus-vocab.csv'; a.click();
+  };
+  $('#resetProg').onclick=e=>{e.preventDefault(); if(confirm('Effacer tous tes progrès de révision ?')){progress={};saveProg();renderStats();renderTable();newSession();}};
+
+  document.addEventListener('keydown',e=>{
+    if(!$('#study').classList.contains('active')) return;
+    if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+    const faces=MODES[settings.mode].faces, last=stage>=faces.length-1;
+    if(e.key===' '||e.key==='Enter'){e.preventDefault(); if(!last){stage++;render();}}
+    else if(e.key==='1'&&last){grade(true);}
+    else if(e.key==='2'&&last){grade(false);}
+    else if(e.key==='ArrowRight'){next();}
+    else if(e.key==='ArrowLeft'){prev();}
+  });
+
+  /* ---------- go ---------- */
+  if(!DATA.length){
+    $('#face').innerHTML='<div class="empty">Le fichier <b>vocab.js</b> est vide.<br>Envoie les photos des listes pour le remplir.</div>';
+  }
+  refreshChips(); newSession(); renderTable();
+})();
+</script>
+</body>
+</html>
