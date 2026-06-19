@@ -16,9 +16,16 @@ marche hors-ligne et sur téléphone. (Aucune installation.)
   - Raccourcis : `Espace` révéler · `1` je savais · `2` pas sûr · `←`/`→` naviguer
 - **Quiz** (style Kahoot) : QCM à 4 cases colorées, chrono, points selon la rapidité,
   bonus de série 🔥, médaille + record en fin de partie. Touches `1`–`4` pour répondre.
+- **Progrès** : tableau de bord par profil — mémorisation %, réussite %, mots acquis,
+  détail par pensum, et la liste des mots « à revoir » (les plus ratés).
 - **Liste & tri** : tableau complet, triable par colonne, recherche, export CSV.
 
-Les progrès sont stockés dans le navigateur (localStorage).
+## Profils (login par prénom)
+Au 1er lancement, l'appli demande un prénom (pas de mot de passe). Chaque profil a sa
+propre progression (révision + quiz). Le bouton 👤 en haut à droite permet de changer
+de profil ou d'en créer/supprimer un. **Tout est 100 % local** (localStorage du
+navigateur) : rien n'est envoyé en ligne, et les profils ne se synchronisent pas entre
+appareils — chaque appareil/navigateur a les siens.
 
 ## Ajouter / modifier des mots
 Tout est dans **`vocab.js`**. Une ligne = un mot. Format :

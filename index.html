@@ -132,7 +132,36 @@
   .qendstats{color:var(--ink-soft);margin-top:8px;font-size:15px}
   .qendbest{margin-top:6px;font-size:13px;color:var(--gold);font-weight:700;min-height:18px}
   .qend .actions{margin-top:18px;justify-content:center}
-  @media (max-width:520px){ .prompt{font-size:34px} .answer .nl{font-size:28px} th,td{padding:8px} .qprompt{font-size:32px} .qtile{font-size:15px} }
+  /* ---- Profil + modal ---- */
+  .tabs button{font-size:13px;padding:9px 6px}
+  .whopill{margin-left:auto;border:1px solid var(--line);background:var(--paper-2);border-radius:999px;
+    padding:6px 12px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;box-shadow:var(--shadow)}
+  .modal{position:fixed;inset:0;background:rgba(40,30,18,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .modal-box{background:var(--paper-2);border:1px solid var(--line);border-radius:20px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow)}
+  .modal-box h2{margin:0 0 14px;font-size:21px}
+  #whoList{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .whochip{display:inline-flex;align-items:center;border:1px solid var(--line);background:#fff;border-radius:12px;overflow:hidden}
+  .whochip button{border:0;background:transparent;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;padding:10px 12px}
+  .whochip .del{color:var(--accent);opacity:.55;padding:10px 10px 10px 0}
+  .who-new{display:flex;gap:8px}
+  .who-new input{flex:1;padding:11px 12px;border:1px solid var(--line);border-radius:12px;font:inherit;background:#fff}
+  .who-new button{border:0;background:var(--accent-2);color:#fff;border-radius:12px;padding:11px 14px;font:inherit;font-weight:700;cursor:pointer}
+  /* ---- Stats ---- */
+  .statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .statcard{background:var(--paper-2);border:1px solid var(--line);border-radius:16px;padding:14px 10px;box-shadow:var(--shadow);text-align:center}
+  .statcard .big{font-size:26px;font-weight:800;color:var(--accent-2);line-height:1.1}
+  .statcard .lbl{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;margin-top:3px}
+  .stath{margin:22px 2px 8px;font-size:13px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px}
+  .pbar{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:13px}
+  .pbar .nm{width:48px;font-weight:700;color:var(--ink-soft)}
+  .pbar .track{flex:1;height:10px;background:#0000000f;border-radius:6px;overflow:hidden}
+  .pbar .fill{display:block;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--gold))}
+  .pbar .cnt{width:54px;text-align:right;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .revrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;margin:6px 0;background:var(--paper-2)}
+  .revrow .la{font-family:"Iowan Old Style",Palatino,Georgia,serif;font-weight:700}
+  .revrow .nl{color:var(--nl)}
+  .revrow .miss{color:var(--accent);font-weight:800;font-size:12px;white-space:nowrap}
+  @media (max-width:520px){ .prompt{font-size:34px} .answer .nl{font-size:28px} th,td{padding:8px} .qprompt{font-size:32px} .qtile{font-size:15px} .statgrid{grid-template-columns:repeat(2,1fr)} }
 </style>
 </head>
 <body>
@@ -140,12 +169,14 @@
   <header>
     <h1 class="serif"><span class="pegasus">Pegasus Novus</span> · Vocabulaire</h1>
     <span class="sub">latin → <i>pont français</i> → néerlandais</span>
+    <button id="whoBtn" class="whopill" title="Changer de profil">👤 <span id="whoName">—</span> ▾</button>
   </header>
 
   <div class="tabs">
     <button data-tab="study" class="active">🎴 Réviser</button>
     <button data-tab="quiz">🎮 Quiz</button>
-    <button data-tab="browse">📋 Liste &amp; tri</button>
+    <button data-tab="stats">📊 Progrès</button>
+    <button data-tab="browse">📋 Liste</button>
   </div>
 
   <!-- ===================== STUDY ===================== -->
@@ -302,6 +333,32 @@
       </div>
     </div>
   </section>
+
+  <!-- ===================== STATS / PROGRÈS ===================== -->
+  <section class="panel" id="stats">
+    <div class="statgrid" id="statCards"></div>
+    <h3 class="stath">Mémorisation par pensum</h3>
+    <div id="statPensums"></div>
+    <h3 class="stath">À revoir en priorité</h3>
+    <div id="statReview"></div>
+    <p class="muted" style="font-size:12px;margin-top:16px">
+      « Acquis » = répondu juste 5 fois d'affilée. « À revoir » = les mots les plus ratés.
+      <a href="#" id="resetProfile">Réinitialiser les scores de ce profil</a>
+    </p>
+  </section>
+</div>
+
+<!-- Profil : « login » par prénom, sans mot de passe, 100% local -->
+<div id="whoModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h2 id="whoTitle">Qui révise ?</h2>
+    <div id="whoList"></div>
+    <div class="who-new">
+      <input id="whoInput" type="text" placeholder="ton prénom…" maxlength="20" autocomplete="off">
+      <button id="whoCreate">C'est parti →</button>
+    </div>
+    <p style="text-align:center;margin:14px 0 0"><button id="whoCancel" class="small-btn" style="display:none">Annuler</button></p>
+  </div>
 </div>
 
 <script src="vocab.js"></script>
@@ -317,13 +374,49 @@
     set:(k,v)=>localStorage.setItem('pegasus.'+k, JSON.stringify(v))
   };
 
-  let progress = LS.get('progress', {});           // id -> {box, seen, ok, ko}
   let settings = LS.get('settings', {});
   settings.mode  = settings.mode  || 'la-pont-nl';
   settings.order = settings.order || 'priority';
-  const prog = id => progress[id] || (progress[id]={box:0,seen:0,ok:0,ko:0});
-  const saveProg = ()=>LS.set('progress',progress);
   const saveSet  = ()=>LS.set('settings',settings);
+
+  /* ---------- profils (local, sans mot de passe) ---------- */
+  let profiles = LS.get('profiles', {});                 // { prénom: {progress, quizBest, created, seen} }
+  let current  = LS.get('current', '');
+  const legacy = LS.get('progress', null);               // ancien progrès global (avant les profils)
+  let progress = {};                                     // référence vers le progrès du profil courant
+  const saveProfiles = ()=>LS.set('profiles', profiles);
+  const saveProg = ()=>saveProfiles();
+  const prog = id => progress[id] || (progress[id]={box:0,seen:0,ok:0,ko:0}); // lecture + création
+  const pget = id => progress[id] || {box:0,seen:0,ok:0,ko:0};                // lecture seule (sans créer)
+  function ensureProfile(name){ if(!profiles[name]) profiles[name]={progress:{},quizBest:{},created:Date.now()}; return profiles[name]; }
+  function setProfile(name){
+    name=String(name).trim(); if(!name) return;
+    const p=ensureProfile(name); p.seen=Date.now();
+    // récupère une seule fois l'ancien progrès global (avant les profils) dans le 1er profil
+    if(legacy && Object.keys(legacy).length && !Object.keys(p.progress).length && !LS.get('legacyMoved',false)){
+      p.progress=Object.assign({},legacy); LS.set('legacyMoved',true);
+    }
+    current=name; progress=p.progress; LS.set('current',current); saveProfiles();
+    updateWho(); newSession(); renderTable(); quizBestLine();
+    if($('#stats').classList.contains('active')) renderProgress();
+  }
+  function updateWho(){ const el=$('#whoName'); if(el) el.textContent=current||'—'; }
+  function showWho(first){
+    const list=$('#whoList'); list.innerHTML='';
+    Object.keys(profiles).sort((a,b)=>a.localeCompare(b)).forEach(name=>{
+      const row=document.createElement('span'); row.className='whochip';
+      const b=document.createElement('button'); b.textContent='👤 '+name; b.onclick=()=>{ setProfile(name); hideWho(); };
+      const x=document.createElement('button'); x.className='del'; x.textContent='✕'; x.title='supprimer ce profil';
+      x.onclick=ev=>{ ev.stopPropagation(); if(confirm('Supprimer « '+name+' » et tous ses scores ?')){ delete profiles[name]; if(current===name){current='';LS.set('current','');} saveProfiles(); showWho(true); } };
+      row.appendChild(b); row.appendChild(x); list.appendChild(row);
+    });
+    $('#whoTitle').textContent = (first && !Object.keys(profiles).length) ? 'Choisis ton prénom' : 'Qui révise ?';
+    $('#whoInput').value='';
+    $('#whoCancel').style.display = (current && profiles[current]) ? 'inline-block' : 'none';
+    $('#whoModal').style.display='flex';
+    setTimeout(()=>{ try{$('#whoInput').focus();}catch(e){} }, 50);
+  }
+  function hideWho(){ $('#whoModal').style.display='none'; }
 
   function secKey(s){const p=String(s).split('.');return [parseInt(p[0])||0, parseInt(p[1])||0];}
   const ALL_SEC   = [...new Set(DATA.map(w=>w.sectie||('Caput '+w.caput)))].sort((a,b)=>{const A=secKey(a),B=secKey(b);return A[0]-B[0]||A[1]-B[1];});
@@ -384,7 +477,7 @@
     if(o==='random') list=shuffle(list.slice());
     else if(o==='num') list=list.slice().sort((a,b)=>(a.n||0)-(b.n||0));
     else if(o==='alpha') list=list.slice().sort((a,b)=>(a.la||'').localeCompare(b.la||''));
-    else list=shuffle(list.slice()).sort((a,b)=> prog(a.id).box-prog(b.id).box || prog(a.id).seen-prog(b.id).seen);
+    else list=shuffle(list.slice()).sort((a,b)=> pget(a.id).box-pget(b.id).box || pget(a.id).seen-pget(b.id).seen);
     session=list; idx=0; stage=0; renderStats(); render();
   }
   function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -428,8 +521,8 @@
 
   function renderStats(){
     const f=filtered();
-    const mastered=f.filter(w=>prog(w.id).box>=5).length;
-    const neuf=f.filter(w=>prog(w.id).box===0).length;
+    const mastered=f.filter(w=>pget(w.id).box>=5).length;
+    const neuf=f.filter(w=>pget(w.id).box===0).length;
     $('#stTotal').textContent=f.length;
     $('#stNew').textContent=neuf;
     $('#stMastered').textContent=mastered;
@@ -444,7 +537,7 @@
       .filter(w=>!q || [w.la,w.gen,w.fr,w.nl,w.pont].join(' ').toLowerCase().includes(q));
     rows.sort((a,b)=>{
       let av,bv;
-      if(sortKey==='box'){av=prog(a.id).box;bv=prog(b.id).box;}
+      if(sortKey==='box'){av=pget(a.id).box;bv=pget(b.id).box;}
       else if(sortKey==='n'){av=a.n||0;bv=b.n||0;}
       else {av=(a[sortKey]??'');bv=(b[sortKey]??'');}
       if(typeof av==='number') return (av-bv)*sortDir;
@@ -453,7 +546,7 @@
     const tb=$('#tbody'); tb.innerHTML='';
     if(!rows.length){tb.innerHTML='<tr><td colspan="7" class="empty">Rien ne correspond.</td></tr>';}
     rows.forEach(w=>{
-      const b=prog(w.id).box;
+      const b=pget(w.id).box;
       const tr=document.createElement('tr');
       tr.innerHTML=`<td class="num">${w.n??''}</td>
         <td class="la">${esc(w.la)}${w.gen?`<span class="gen">${esc(w.gen)}</span>`:''}</td>
@@ -488,7 +581,7 @@
       const answer=w[af], seen=new Set([answer]), dist=[];
       const cand=shuffle(all.filter(y=>y.type===w.type)).concat(shuffle(all.filter(y=>y.type!==w.type)));
       for(const x of cand){ if(dist.length>=3) break; if(!seen.has(x[af])){ seen.add(x[af]); dist.push(x[af]); } }
-      return { prompt:w[pf], sub: pf==='la'?(w.gen||''):'', answer, options:shuffle([answer,...dist]) };
+      return { id:w.id, prompt:w[pf], sub: pf==='la'?(w.gen||''):'', answer, options:shuffle([answer,...dist]) };
     });
   }
   function startQuiz(){
@@ -527,6 +620,7 @@
   function answerQ(idx){
     if(Q.locked) return; Q.locked=true; clearInterval(Q.tk);
     const q=Q.list[Q.i], cIdx=q.options.indexOf(q.answer), ok=idx===cIdx;
+    if(q.id && current){ const p=prog(q.id); p.seen++; if(ok){p.ok++;p.box=Math.min(5,p.box+1);} else {p.ko++;p.box=1;} saveProg(); }
     const tiles=[...document.querySelectorAll('#qTiles .qtile')];
     $('#qTiles').classList.add('locked');
     tiles.forEach((t,i)=>{ if(i===cIdx) t.classList.add('correct'); else if(i===idx) t.classList.add('wrong'); else t.classList.add('dim'); });
@@ -551,13 +645,43 @@
     $('#qFinalScore').textContent=Q.score;
     $('#qEndStats').textContent=Q.correct+' / '+total+' bonnes réponses · '+acc+'% de réussite';
     $('#qMedal').textContent= acc>=90?'🥇':acc>=70?'🥈':acc>=50?'🥉':'💪';
-    const key='quizBest_'+settings.quizDir, best=LS.get(key,0);
-    if(Q.score>best){ LS.set(key,Q.score); $('#qEndBest').textContent='🎉 Nouveau record !'; }
+    const qb = profiles[current] ? (profiles[current].quizBest = profiles[current].quizBest||{}) : {};
+    const best = qb[settings.quizDir]||0;
+    if(Q.score>best){ qb[settings.quizDir]=Q.score; saveProfiles(); $('#qEndBest').textContent='🎉 Nouveau record !'; }
     else $('#qEndBest').textContent='Record : '+best+' pts';
   }
   function qbeep(f,d,t){ try{ if(!Q.actx) return; const o=Q.actx.createOscillator(),g=Q.actx.createGain(); o.type=t; o.frequency.value=f; o.connect(g); g.connect(Q.actx.destination); g.gain.setValueAtTime(0.06,Q.actx.currentTime); o.start(); g.gain.exponentialRampToValueAtTime(0.0001,Q.actx.currentTime+d); o.stop(Q.actx.currentTime+d); }catch(e){} }
-  function quizBestLine(){ const best=LS.get('quizBest_'+settings.quizDir,0); const sel=$('#qDir').selectedOptions[0]; $('#qBestLine').textContent= best?('Meilleur score ('+(sel?sel.text:'')+') : '+best+' pts'):''; }
+  function quizBestLine(){ const qb=(profiles[current]&&profiles[current].quizBest)||{}; const best=qb[settings.quizDir]||0; const sel=$('#qDir').selectedOptions[0]; $('#qBestLine').textContent= best?('Meilleur score ('+(sel?sel.text:'')+') : '+best+' pts'):''; }
   function quizSetupView(){ clearInterval(Q.tk); $('#quizPlay').style.display='none'; $('#quizEnd').style.display='none'; $('#quizSetup').style.display='block'; quizBestLine(); }
+
+  /* ---------- progrès (stats par profil) ---------- */
+  function card(big,lbl){ return '<div class="statcard"><div class="big">'+esc(String(big))+'</div><div class="lbl">'+esc(lbl)+'</div></div>'; }
+  function renderProgress(){
+    const total=DATA.length;
+    const studied=DATA.filter(w=>pget(w.id).seen>0);
+    const mastered=DATA.filter(w=>pget(w.id).box>=5).length;
+    let ok=0,ko=0; DATA.forEach(w=>{const p=pget(w.id); ok+=p.ok; ko+=p.ko;});
+    const acc=(ok+ko)?Math.round(ok/(ok+ko)*100):0;
+    const memo=total?Math.round(DATA.reduce((s,w)=>s+Math.min(5,pget(w.id).box),0)/(5*total)*100):0;
+    const qb=(profiles[current]&&profiles[current].quizBest)||{};
+    const bestQuiz=Math.max(0, ...Object.values(qb), 0);
+    $('#statCards').innerHTML =
+        card(memo+'%','Mémorisation') + card(acc+'%','Réussite') + card(mastered+' / '+total,'Acquis')
+      + card(studied.length,'Mots vus') + card(Math.max(0,studied.length-mastered),'En cours') + card(bestQuiz||'—','Record quiz');
+    $('#statPensums').innerHTML = ALL_SEC.map(sec=>{
+      const ws=DATA.filter(w=>(w.sectie||('Caput '+w.caput))===sec);
+      const m=ws.filter(w=>pget(w.id).box>=5).length;
+      const pct=ws.length?Math.round(m/ws.length*100):0;
+      return '<div class="pbar"><span class="nm">'+esc(sec)+'</span><span class="track"><span class="fill" style="width:'+pct+'%"></span></span><span class="cnt">'+m+'/'+ws.length+'</span></div>';
+    }).join('');
+    if(!studied.length){ $('#statReview').innerHTML='<p class="muted">Pas encore de données pour ce profil. Lance une révision 🎴 ou un quiz 🎮 !</p>'; return; }
+    const rev=studied.filter(w=>pget(w.id).box<5)
+      .sort((a,b)=> pget(b.id).ko-pget(a.id).ko || pget(a.id).box-pget(b.id).box).slice(0,15);
+    $('#statReview').innerHTML = rev.length ? rev.map(w=>{
+      const p=pget(w.id);
+      return '<div class="revrow"><span><span class="la">'+esc(w.la)+'</span> → <span class="nl">'+esc(w.nl)+'</span></span><span class="miss">'+(p.ko?('✗ '+p.ko):('niv. '+p.box))+'</span></div>';
+    }).join('') : '<p class="muted">Tout est acquis ici 👏</p>';
+  }
 
   /* ---------- wiring ---------- */
   function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -567,6 +691,7 @@
     document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); $('#'+b.dataset.tab).classList.add('active');
     if(b.dataset.tab==='browse') renderTable();
+    if(b.dataset.tab==='stats') renderProgress();
     if(b.dataset.tab==='quiz') quizSetupView(); else clearInterval(Q.tk);
   });
 
@@ -581,12 +706,20 @@
   $('#exportCsv').onclick=()=>{
     const rows=[['n','pensum','latin','forme','type','francais','pont','neerlandais','niveau']];
     DATA.filter(w=>settings.sec2.includes(w.sectie||('Caput '+w.caput)) && settings.types2.includes(w.type))
-        .forEach(w=>rows.push([w.n,w.sectie,w.la,w.gen||'',w.type,w.fr||'',w.pont||'',w.nl,prog(w.id).box]));
+        .forEach(w=>rows.push([w.n,w.sectie,w.la,w.gen||'',w.type,w.fr||'',w.pont||'',w.nl,pget(w.id).box]));
     const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
     const a=document.createElement('a');
     a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'})); a.download='pegasus-vocab.csv'; a.click();
   };
-  $('#resetProg').onclick=e=>{e.preventDefault(); if(confirm('Effacer tous tes progrès de révision ?')){progress={};saveProg();renderStats();renderTable();newSession();}};
+  function resetCurrent(){ if(profiles[current]) profiles[current].progress={}; progress = profiles[current]?profiles[current].progress:{}; saveProfiles(); renderStats(); renderTable(); newSession(); if($('#stats').classList.contains('active')) renderProgress(); }
+  $('#resetProg').onclick=e=>{e.preventDefault(); if(confirm('Effacer les progrès de « '+(current||'?')+' » ?')) resetCurrent();};
+  $('#resetProfile').onclick=e=>{e.preventDefault(); if(confirm('Effacer les progrès de « '+(current||'?')+' » ?')) resetCurrent();};
+
+  // Profils
+  $('#whoBtn').onclick=()=>showWho(false);
+  $('#whoCancel').onclick=hideWho;
+  $('#whoCreate').onclick=()=>{ const v=$('#whoInput').value.trim(); if(v){ setProfile(v); hideWho(); } };
+  $('#whoInput').onkeydown=e=>{ if(e.key==='Enter') $('#whoCreate').click(); };
 
   // Quiz
   $('#qDir').value=settings.quizDir; $('#qCount').value=String(settings.quizCount);
@@ -615,7 +748,9 @@
   if(!DATA.length){
     $('#face').innerHTML='<div class="empty">Le fichier <b>vocab.js</b> est vide.<br>Envoie les photos des listes pour le remplir.</div>';
   }
-  refreshChips(); newSession(); renderTable(); quizBestLine();
+  refreshChips();
+  if(current && profiles[current]) setProfile(current);          // charge le profil mémorisé + rend tout
+  else { updateWho(); newSession(); renderTable(); quizBestLine(); showWho(true); }  // 1er lancement → demande le prénom
 })();
 </script>
 </body>
