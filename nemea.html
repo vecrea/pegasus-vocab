@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ontleedtrainer · Hercules en de leeuw van Nemea</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1b2230;
+    --muted:#5c6675;
+    --faint:#8b93a1;
+    --canvas:#e7eaef;
+    --card:#ffffff;
+    --line:#dde2e9;
+    --ow:#2f62c4;   /* onderwerp */
+    --wwg:#c24a38;  /* werkwoordelijk gezegde */
+    --nwg:#138a86;  /* naamwoordelijk gezegde */
+    --lv:#3c8c57;   /* lijdend voorwerp */
+    --mv:#8154ae;   /* meewerkend voorwerp */
+    --nwd:#be8410;  /* naamwoordelijk deel */
+    --radius:14px;
+    --shadow:0 1px 2px rgba(27,34,48,.05), 0 12px 30px rgba(27,34,48,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Inter",system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #eef1f6 0%, transparent 60%),
+      var(--canvas);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:28px 18px 56px;
+  }
+  .wrap{max-width:880px;margin:0 auto}
+
+  /* Header */
+  header{margin-bottom:22px}
+  .eyebrow{
+    font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--faint);font-weight:600;margin:0 0 6px;
+  }
+  h1{
+    font-family:"EB Garamond",Georgia,serif;
+    font-weight:600;font-size:clamp(26px,4.4vw,38px);
+    line-height:1.05;margin:0 0 8px;letter-spacing:.005em;
+  }
+  .method{
+    font-size:13.5px;color:var(--muted);margin:0;
+  }
+  .method b{color:var(--ink);font-weight:600}
+  .method .sep{color:var(--faint);padding:0 6px}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:128px 1fr;gap:20px;margin-top:22px}
+
+  /* Step spine (signature) */
+  .spine{position:sticky;top:18px;align-self:start}
+  .spine ol{list-style:none;margin:0;padding:0;position:relative}
+  .spine ol::before{
+    content:"";position:absolute;left:15px;top:14px;bottom:14px;width:2px;
+    background:var(--line);
+  }
+  .spine li{display:flex;align-items:center;gap:10px;padding:9px 0;position:relative}
+  .node{
+    width:32px;height:32px;flex:0 0 32px;border-radius:50%;
+    display:grid;place-items:center;font-weight:700;font-size:13px;
+    background:var(--card);border:2px solid var(--line);color:var(--faint);
+    transition:all .35s ease;z-index:1;
+  }
+  .spine li .lbl{font-size:12.5px;color:var(--faint);font-weight:600;transition:color .3s}
+  .spine li.done .node{background:var(--ink);border-color:var(--ink);color:#fff}
+  .spine li.done .lbl{color:var(--muted)}
+  .spine li.active .node{
+    border-color:var(--ink);color:var(--ink);
+    box-shadow:0 0 0 4px rgba(27,34,48,.08);transform:scale(1.06);
+  }
+  .spine li.active .lbl{color:var(--ink)}
+  .node.nl{font-family:"EB Garamond",serif;font-size:13px}
+
+  /* Card */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:22px 22px 18px;
+  }
+  .card-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .counter{font-size:12.5px;color:var(--faint);font-weight:600;letter-spacing:.02em}
+  .counter b{color:var(--ink)}
+  .dots{display:flex;gap:4px;flex-wrap:wrap;max-width:260px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line)}
+  .dot.seen{background:var(--ow)}
+  .dot.cur{background:var(--ink);transform:scale(1.25)}
+
+  .latin{
+    font-family:"EB Garamond",Georgia,serif;
+    font-size:clamp(20px,3.2vw,26px);line-height:1.4;
+    color:var(--ink);margin:2px 0 18px;
+  }
+
+  .clause{
+    border-left:3px solid var(--line);padding:2px 0 2px 14px;margin:14px 0;
+  }
+  .clause-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .clause-tag{
+    font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--faint);
+  }
+  .clause-latin{
+    font-family:"EB Garamond",serif;font-size:16.5px;color:var(--muted);
+  }
+  .rows{margin-top:8px;display:flex;flex-direction:column;gap:7px}
+
+  .row{
+    display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+    opacity:0;transform:translateY(4px);
+  }
+  .row.reveal{animation:rise .42s cubic-bezier(.2,.7,.3,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+
+  .tag{
+    font-size:11px;font-weight:700;letter-spacing:.03em;
+    padding:2px 8px;border-radius:999px;white-space:nowrap;
+    border:1px solid;
+  }
+  .tag.ow{color:var(--ow);background:color-mix(in srgb,var(--ow) 11%,#fff);border-color:color-mix(in srgb,var(--ow) 28%,#fff)}
+  .tag.wwg{color:var(--wwg);background:color-mix(in srgb,var(--wwg) 11%,#fff);border-color:color-mix(in srgb,var(--wwg) 28%,#fff)}
+  .tag.nwg{color:var(--nwg);background:color-mix(in srgb,var(--nwg) 11%,#fff);border-color:color-mix(in srgb,var(--nwg) 28%,#fff)}
+  .tag.lv{color:var(--lv);background:color-mix(in srgb,var(--lv) 11%,#fff);border-color:color-mix(in srgb,var(--lv) 28%,#fff)}
+  .tag.mv{color:var(--mv);background:color-mix(in srgb,var(--mv) 11%,#fff);border-color:color-mix(in srgb,var(--mv) 28%,#fff)}
+  .tag.nwd{color:var(--nwd);background:color-mix(in srgb,var(--nwd) 12%,#fff);border-color:color-mix(in srgb,var(--nwd) 30%,#fff)}
+
+  .role{font-size:12.5px;color:var(--faint);min-width:96px;font-weight:500}
+  .word{font-family:"EB Garamond",serif;font-size:18px;font-weight:600;color:var(--ink)}
+  .word.implicit{color:var(--faint);font-weight:500}
+  .gloss{font-size:13.5px;color:var(--muted)}
+  .gloss::before{content:"› ";color:var(--faint)}
+
+  .note{
+    opacity:0;transform:translateY(4px);
+    font-size:12.5px;color:var(--muted);background:#f6f7f9;
+    border-radius:9px;padding:8px 11px;margin-top:9px;line-height:1.45;
+  }
+  .note.reveal{animation:rise .42s ease forwards}
+  .note b{color:var(--ink);font-weight:600}
+
+  .translation{
+    opacity:0;transform:translateY(4px);
+    margin-top:18px;padding:14px 16px;border-radius:var(--radius);
+    background:color-mix(in srgb,var(--ow) 6%,#fff);
+    border:1px solid color-mix(in srgb,var(--ow) 22%,#fff);
+  }
+  .translation.reveal{animation:rise .45s ease forwards}
+  .translation .t-label{
+    font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ow);margin:0 0 5px;
+  }
+  .translation p{margin:0;font-size:15.5px;color:var(--ink);line-height:1.5}
+
+  /* Helper + actions */
+  .helper{
+    font-size:13px;color:var(--muted);background:#f3f5f8;border:1px dashed var(--line);
+    border-radius:10px;padding:10px 13px;margin:18px 0 14px;line-height:1.45;
+  }
+  .helper b{color:var(--ink)}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  button{font-family:inherit;cursor:pointer;border-radius:10px;border:1px solid transparent;
+    font-weight:600;transition:transform .08s ease,background .2s,border-color .2s}
+  button:active{transform:translateY(1px)}
+  button:focus-visible{outline:3px solid color-mix(in srgb,var(--ow) 45%,#fff);outline-offset:2px}
+  .btn-primary{background:var(--ink);color:#fff;padding:11px 18px;font-size:14.5px}
+  .btn-primary:hover{background:#2a3344}
+  .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line);padding:10px 14px;font-size:13.5px}
+  .btn-ghost:hover{border-color:var(--faint);color:var(--ink)}
+  .nav{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px}
+  .nav button{background:transparent;color:var(--muted);border:1px solid var(--line);padding:9px 14px;font-size:13.5px}
+  .nav button:hover:not(:disabled){border-color:var(--faint);color:var(--ink)}
+  .nav button:disabled{opacity:.4;cursor:default}
+
+  /* Legend */
+  .legend{margin-top:26px;border-top:1px solid var(--line);padding-top:16px}
+  .legend h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:0 0 10px;font-weight:700}
+  .legend-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px 18px}
+  .leg{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted)}
+  .leg b{color:var(--ink);font-weight:600}
+
+  @media (max-width:720px){
+    .layout{grid-template-columns:1fr;gap:16px}
+    .spine{position:static}
+    .spine ol{display:flex;justify-content:space-between}
+    .spine ol::before{left:14px;right:14px;top:15px;bottom:auto;width:auto;height:2px}
+    .spine li{flex-direction:column;gap:6px;padding:0;text-align:center;flex:1}
+    .spine li .lbl{font-size:11px}
+    .role{min-width:0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .row,.note,.translation{opacity:1;transform:none}
+    .row.reveal,.note.reveal,.translation.reveal{animation:none}
+    .node{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Latijn → Nederlands · zinsontleding</p>
+    <h1>Hercules en de leeuw van Nemea</h1>
+    <p class="method">
+      <b>1.</b> werkwoord <span class="sep">·</span> WWG of NWG
+      <span class="sep">·</span> <b>2.</b> onderwerp
+      <span class="sep">·</span> <b>3.</b> LV + MV / NWD
+    </p>
+  </header>
+
+  <div class="layout">
+    <nav class="spine" aria-label="Stappen">
+      <ol>
+        <li data-spine="1"><span class="node">1</span><span class="lbl">werkwoord</span></li>
+        <li data-spine="2"><span class="node">2</span><span class="lbl">onderwerp</span></li>
+        <li data-spine="3"><span class="node">3</span><span class="lbl">voorwerpen</span></li>
+        <li data-spine="4"><span class="node nl">NL</span><span class="lbl">vertaling</span></li>
+      </ol>
+    </nav>
+
+    <main class="card">
+      <div class="card-top">
+        <span class="counter">zin <b id="cur">1</b> / 16</span>
+        <div class="dots" id="dots" aria-hidden="true"></div>
+      </div>
+
+      <p class="latin" id="latin"></p>
+      <div id="stage"></div>
+      <div class="translation" id="translation" hidden>
+        <p class="t-label">Vertaling</p>
+        <p id="trans-text"></p>
+      </div>
+
+      <p class="helper" id="helper"></p>
+      <div class="actions">
+        <button class="btn-primary" id="next-step"></button>
+        <button class="btn-ghost" id="reset" hidden>Opnieuw</button>
+      </div>
+
+      <div class="nav">
+        <button id="prev">← vorige zin</button>
+        <button id="nextSent">volgende zin →</button>
+      </div>
+    </main>
+  </div>
+
+  <section class="legend">
+    <h2>Afkortingen</h2>
+    <div class="legend-grid">
+      <div class="leg"><span class="tag ow">OW</span><span><b>onderwerp</b> · nominatief</span></div>
+      <div class="leg"><span class="tag wwg">WWG</span><span><b>werkwoordelijk gezegde</b> · een handeling</span></div>
+      <div class="leg"><span class="tag nwg">NWG</span><span><b>naamwoordelijk gezegde</b> · koppelwerkwoord</span></div>
+      <div class="leg"><span class="tag lv">LV</span><span><b>lijdend voorwerp</b> · accusatief</span></div>
+      <div class="leg"><span class="tag mv">MV</span><span><b>meewerkend voorwerp</b> · datief</span></div>
+      <div class="leg"><span class="tag nwd">NWD</span><span><b>naamwoordelijk deel</b> · nominatief</span></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const S = [
+ { latin:"In silvā Nemeaeā ingēns leō vīvēbat, quī pecus crūdēliter rapiēbat, equōs graviter vulnerābat.",
+   dutch:"In een bos van Nemea leefde een reusachtige leeuw, die het vee op wrede wijze roofde, de paarden ernstig verwondde.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"In silvā Nemeaeā ingēns leō vīvēbat",
+      verb:{w:"vīvēbat",t:"WWG",nl:"leefde"}, subj:{w:"(ingēns) leō",exp:true,nl:"de reusachtige leeuw"},
+      obj:[], note:"<b>vīvere is onovergankelijk</b> → geen voorwerp. In silvā Nemeaeā = bwb van plaats."},
+     {tag:"Bijzin · betrekkelijk", latin:"quī pecus crūdēliter rapiēbat",
+      verb:{w:"rapiēbat",t:"WWG",nl:"roofde"}, subj:{w:"quī",exp:true,nl:"die (= de leeuw)"},
+      obj:[{r:"LV",w:"pecus",nl:"het vee"}], note:"crūdēliter = bwb (op wrede wijze)."},
+     {tag:"Bijzin · betrekkelijk (vervolg)", latin:"equōs graviter vulnerābat",
+      verb:{w:"vulnerābat",t:"WWG",nl:"verwondde"}, subj:{w:"(quī / hij)",exp:false,nl:"die = de leeuw"},
+      obj:[{r:"LV",w:"equōs",nl:"de paarden"}], note:"graviter = bwb (ernstig)."}
+   ]},
+
+ { latin:"Puerī puellaeque, virī mulierēsque terrēbantur.",
+   dutch:"De jongens en de meisjes, de mannen en de vrouwen werden bang gemaakt.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Puerī puellaeque, virī mulierēsque terrēbantur",
+      verb:{w:"terrēbantur",t:"WWG",nl:"werden bang gemaakt"},
+      subj:{w:"Puerī puellaeque, virī mulierēsque",exp:true,nl:"de jongens en meisjes, de mannen en vrouwen"},
+      obj:[], note:"<b>Lijdende vorm (passief)</b> → geen lijdend voorwerp. Het onderwerp ondergaat de handeling."}
+   ]},
+
+ { latin:"Pellis eius neque sagittīs neque lapidibus neque gladiō perfodī poterat.",
+   dutch:"Zijn huid kon noch met pijlen, noch met stenen, noch door een zwaard doorboord worden.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Pellis eius ... perfodī poterat",
+      verb:{w:"perfodī poterat",t:"WWG",nl:"kon doorboord worden"},
+      subj:{w:"pellis (eius)",exp:true,nl:"zijn huid"},
+      obj:[], note:"<b>Lijdende vorm</b> → geen LV. neque ... neque ... neque (sagittīs · lapidibus · gladiō) = bwb (waarmee?, ablatief)."}
+   ]},
+
+ { latin:"Invictum vidēbātur ferōx animal.",
+   dutch:"Onoverwinnelijk scheen het woeste dier.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Invictum vidēbātur ferōx animal",
+      verb:{w:"vidēbātur",t:"NWG",nl:"scheen / leek"},
+      subj:{w:"ferōx animal",exp:true,nl:"het woeste dier"},
+      obj:[{r:"NWD",w:"invictum",nl:"onoverwinnelijk"}],
+      note:"<b>vidērī (schijnen/lijken) is een koppelwerkwoord</b> → NWG. invictum staat in de nominatief, net als het onderwerp."}
+   ]},
+
+ { latin:"Itaque Eurystheus, regiōnis rēx, quī perterritus erat, Herculem leōnem caedere iussit.",
+   dutch:"Daarom beval Eurystheus, de koning van de streek, die doodsbang was, Hercules de leeuw te doden.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Itaque Eurystheus, regiōnis rēx, ... iussit",
+      verb:{w:"iussit",t:"WWG",nl:"beval"},
+      subj:{w:"Eurystheus",exp:true,nl:"Eurystheus (regiōnis rēx = bijstelling: de koning van de streek)"},
+      obj:[{r:"LV",w:"Herculem leōnem caedere",nl:"Hercules de leeuw te doden"}],
+      note:"Infinitiefconstructie als voorwerp: Herculem = wie moet doden, leōnem = wat. Itaque = bwb (daarom)."},
+     {tag:"Bijzin · betrekkelijk", latin:"quī perterritus erat",
+      verb:{w:"erat",t:"NWG",nl:"was"}, subj:{w:"quī",exp:true,nl:"die (= Eurystheus)"},
+      obj:[{r:"NWD",w:"perterritus",nl:"doodsbang"}],
+      note:"<b>erat (esse) = koppelwerkwoord</b> → NWG. perterritus staat in de nominatief."}
+   ]},
+
+ { latin:"Herculēs labōrem difficilem nōn fugit, nam deōrum dōna ūtilia sēcum fert: Mercuriī gladium ācrem, Apollinis arcum sagittāsque, Neptūnī equōs et Iovis scūtum eburneum.",
+   dutch:"Hercules vlucht niet voor het werk, want hij draagt nuttige geschenken van de goden bij zich: een scherp zwaard van Mercurius, een boog en pijlen van Apollo, paarden van Neptunus en een ivoren schild van Jupiter.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Herculēs labōrem difficilem nōn fugit",
+      verb:{w:"fugit",t:"WWG",nl:"vlucht (voor) ... niet"}, subj:{w:"Herculēs",exp:true,nl:"Hercules"},
+      obj:[{r:"LV",w:"labōrem (difficilem)",nl:"het moeilijke werk"}],
+      note:"nōn = ontkenning (bwb). difficilem = bvb bij labōrem."},
+     {tag:"Hoofdzin · nam (want)", latin:"nam deōrum dōna ūtilia sēcum fert: ...",
+      verb:{w:"fert",t:"WWG",nl:"draagt"}, subj:{w:"(hij)",exp:false,nl:"Hercules"},
+      obj:[{r:"LV",w:"dōna (ūtilia)",nl:"nuttige geschenken"}],
+      note:"deōrum = bvb (van de goden). sēcum = bwb (bij zich). De opsomming na de dubbele punt hoort bij dōna."}
+   ]},
+
+ { latin:"Et Vulcanī lōricā aureā indūtus leōnem petit.",
+   dutch:"Ook bekleed met een gouden harnas van Vulcanus gaat hij naar de leeuw.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Et Vulcanī lōricā aureā indūtus leōnem petit",
+      verb:{w:"petit",t:"WWG",nl:"gaat naar / valt aan"}, subj:{w:"(hij)",exp:false,nl:"Hercules"},
+      obj:[{r:"LV",w:"leōnem",nl:"de leeuw"}],
+      note:"Vulcanī lōricā aureā indūtus = bijstelling bij het onderwerp (bekleed met het gouden harnas van Vulcanus)."}
+   ]},
+
+ { latin:"Clāvam quoque ipse facit et dextrā gerit.",
+   dutch:"Hij maakt ook zelf een knuppel en draagt die in zijn rechterhand.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Clāvam quoque ipse facit",
+      verb:{w:"facit",t:"WWG",nl:"maakt"}, subj:{w:"ipse",exp:true,nl:"hij zelf"},
+      obj:[{r:"LV",w:"clāvam",nl:"een knuppel"}], note:"quoque = bwb (ook)."},
+     {tag:"Hoofdzin · et (en)", latin:"et dextrā gerit",
+      verb:{w:"gerit",t:"WWG",nl:"draagt"}, subj:{w:"(ipse / hij)",exp:false,nl:"hij zelf"},
+      obj:[{r:"LV",w:"(clāvam)",nl:"die / de knuppel — niet uitgedrukt"}],
+      note:"dextrā = bwb (met de rechterhand)."}
+   ]},
+
+ { latin:"Subitō leō ē silvā prōrumpit.",
+   dutch:"Plotseling springt de leeuw uit het bos tevoorschijn.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Subitō leō ē silvā prōrumpit",
+      verb:{w:"prōrumpit",t:"WWG",nl:"springt tevoorschijn"}, subj:{w:"leō",exp:true,nl:"de leeuw"},
+      obj:[], note:"<b>Onovergankelijk</b> → geen LV. Subitō = bwb (plotseling), ē silvā = bwb (uit het bos)."}
+   ]},
+
+ { latin:"Prīmum Herculēs Apollinis sagittās quiētē mittit, sed sagittae leōnis pellem dūram nōn perfodiunt.",
+   dutch:"Eerst schiet Hercules rustig de pijlen van Apollo, maar de pijlen doorboren de harde huid van de leeuw niet.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Prīmum Herculēs Apollinis sagittās quiētē mittit",
+      verb:{w:"mittit",t:"WWG",nl:"schiet / zendt"}, subj:{w:"Herculēs",exp:true,nl:"Hercules"},
+      obj:[{r:"LV",w:"sagittās",nl:"de pijlen"}],
+      note:"Apollinis = bvb (van Apollo). Prīmum = bwb (eerst), quiētē = bwb (rustig)."},
+     {tag:"Hoofdzin · sed (maar)", latin:"sed sagittae leōnis pellem dūram nōn perfodiunt",
+      verb:{w:"perfodiunt",t:"WWG",nl:"doorboren ... niet"}, subj:{w:"sagittae",exp:true,nl:"de pijlen"},
+      obj:[{r:"LV",w:"pellem (dūram)",nl:"de harde huid"}],
+      note:"leōnis = bvb (van de leeuw). nōn = ontkenning."}
+   ]},
+
+ { latin:"Deinde Mercuriī gladiō pellem perfodere temptat, sed gladius flectitur ut gladius cēreus.",
+   dutch:"Daarna probeert hij met het zwaard van Mercurius de huid te doorboren, maar het zwaard wordt gebogen zoals een zwaard van was.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Deinde Mercuriī gladiō pellem perfodere temptat",
+      verb:{w:"temptat",t:"WWG",nl:"probeert (+ perfodere: te doorboren)"}, subj:{w:"(hij)",exp:false,nl:"Hercules"},
+      obj:[{r:"LV",w:"pellem",nl:"de huid (bij 'perfodere')"}],
+      note:"Mercuriī gladiō = bwb (met het zwaard van Mercurius). Deinde = bwb (daarna)."},
+     {tag:"Hoofdzin · sed (maar)", latin:"sed gladius flectitur ut gladius cēreus",
+      verb:{w:"flectitur",t:"WWG",nl:"wordt gebogen"}, subj:{w:"gladius",exp:true,nl:"het zwaard"},
+      obj:[], note:"<b>Lijdende vorm</b> → geen LV. ut gladius cēreus = bwb van vergelijking (zoals een wassen zwaard)."}
+   ]},
+
+ { latin:"Dēnique clāvam vehementer iactat: quassat tantum caput leō.",
+   dutch:"Ten slotte slingert hij hevig zijn knuppel: de leeuw schudt alleen maar zijn hoofd.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Dēnique clāvam vehementer iactat",
+      verb:{w:"iactat",t:"WWG",nl:"slingert"}, subj:{w:"(hij)",exp:false,nl:"Hercules"},
+      obj:[{r:"LV",w:"clāvam",nl:"de knuppel"}],
+      note:"Dēnique = bwb (ten slotte), vehementer = bwb (hevig)."},
+     {tag:"Hoofdzin", latin:"quassat tantum caput leō",
+      verb:{w:"quassat",t:"WWG",nl:"schudt"}, subj:{w:"leō",exp:true,nl:"de leeuw"},
+      obj:[{r:"LV",w:"caput",nl:"zijn kop / hoofd"}], note:"tantum = bwb (alleen maar)."}
+   ]},
+
+ { latin:"Quia arma ūtilia nōn sunt, tandem manibus nūdīs Herculēs feram vincere temptat.",
+   dutch:"Omdat zijn wapens niet nuttig zijn, probeert Hercules uiteindelijk om met zijn blote handen het wilde dier te overwinnen.",
+   clauses:[
+     {tag:"Bijzin · oorzaak (Quia = omdat)", latin:"Quia arma ūtilia nōn sunt",
+      verb:{w:"sunt",t:"NWG",nl:"zijn"}, subj:{w:"arma",exp:true,nl:"de wapens"},
+      obj:[{r:"NWD",w:"ūtilia",nl:"nuttig"}],
+      note:"<b>sunt (esse) = koppelwerkwoord</b> → NWG. nōn = ontkenning. NWD staat in de nominatief, net als arma."},
+     {tag:"Hoofdzin", latin:"tandem manibus nūdīs Herculēs feram vincere temptat",
+      verb:{w:"temptat",t:"WWG",nl:"probeert (+ vincere: te overwinnen)"}, subj:{w:"Herculēs",exp:true,nl:"Hercules"},
+      obj:[{r:"LV",w:"feram",nl:"het wilde dier (bij 'vincere')"}],
+      note:"manibus nūdīs = bwb (met blote handen). tandem = bwb (uiteindelijk)."}
+   ]},
+
+ { latin:"Leō Herculī digitum dēmordet.",
+   dutch:"De leeuw bijt een vinger van Hercules af.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Leō Herculī digitum dēmordet",
+      verb:{w:"dēmordet",t:"WWG",nl:"bijt af"}, subj:{w:"leō",exp:true,nl:"de leeuw"},
+      obj:[{r:"LV",w:"digitum",nl:"een vinger"},{r:"MV",w:"Herculī",nl:"van / aan Hercules"}],
+      note:"<b>Herculī staat in de datief</b> → meewerkend voorwerp. digitum (accusatief) → lijdend voorwerp."}
+   ]},
+
+ { latin:"Herculēs tamen leōnem comprehendit eumque suffōcat.",
+   dutch:"Toch grijpt Hercules de leeuw vast en wurgt hem.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Herculēs tamen leōnem comprehendit",
+      verb:{w:"comprehendit",t:"WWG",nl:"grijpt vast"}, subj:{w:"Herculēs",exp:true,nl:"Hercules"},
+      obj:[{r:"LV",w:"leōnem",nl:"de leeuw"}], note:"tamen = bwb (toch)."},
+     {tag:"Hoofdzin · -que (en)", latin:"eumque suffōcat",
+      verb:{w:"suffōcat",t:"WWG",nl:"wurgt"}, subj:{w:"(hij)",exp:false,nl:"Hercules"},
+      obj:[{r:"LV",w:"eum",nl:"hem (= de leeuw)"}], note:"-que = en (aangehecht achtervoegsel)."}
+   ]},
+
+ { latin:"Deinde bēstiae dēstringit pellem et ad Eurystheum rēgem redit, leōnis pelle indūtus.",
+   dutch:"Daarna stroopt hij de huid van het beest af en keert terug naar koning Eurystheus, bekleed met de huid van de leeuw.",
+   clauses:[
+     {tag:"Hoofdzin", latin:"Deinde bēstiae dēstringit pellem",
+      verb:{w:"dēstringit",t:"WWG",nl:"stroopt af"}, subj:{w:"(hij)",exp:false,nl:"Hercules"},
+      obj:[{r:"LV",w:"pellem",nl:"de huid"}],
+      note:"bēstiae = bvb (van het beest) bij pellem. Deinde = bwb (daarna)."},
+     {tag:"Hoofdzin · et (en)", latin:"et ad Eurystheum rēgem redit",
+      verb:{w:"redit",t:"WWG",nl:"keert terug"}, subj:{w:"(hij)",exp:false,nl:"Hercules"},
+      obj:[], note:"<b>Onovergankelijk</b> → geen LV. ad Eurystheum rēgem = bwb (naar koning Eurystheus). leōnis pelle indūtus = bijstelling bij het onderwerp."}
+   ]}
+];
+
+const HELP = {
+ 0:"<b>Stap 1 · Zoek het werkwoord.</b> Koppelwerkwoord (zijn, lijken, worden, schijnen, blijven)? → NWG. Anders → WWG. Let op: een zin kan meer dan één gezegde hebben.",
+ 1:"<b>Stap 2 · Zoek het onderwerp.</b> Wie of wat + werkwoord? In het Latijn staat het onderwerp vaak niet apart: de uitgang (-t / -nt) zegt al 'hij / zij / het'.",
+ 2:"<b>Stap 3 · Zoek de voorwerpen.</b> Bij WWG: LV (wie/wat? · accusatief) en MV (aan/voor wie? · datief). Bij NWG: NWD (wat is/lijkt het onderwerp? · nominatief).",
+ 3:"Maak nu eerst je eigen vertaling. Vergelijk daarna met het Nederlands hieronder.",
+ 4:"Goed gewerkt. Door naar de volgende zin."
+};
+
+let i = 0, step = 0;
+
+const $ = id => document.getElementById(id);
+const stage = $("stage"), latinEl = $("latin"), curEl = $("cur"),
+      transBox = $("translation"), transTxt = $("trans-text"),
+      helper = $("helper"), btnNext = $("next-step"), btnReset = $("reset"),
+      btnPrev = $("prev"), btnNextSent = $("nextSent"), dots = $("dots");
+
+function buildDots(){
+  dots.innerHTML="";
+  S.forEach((_,k)=>{ const d=document.createElement("span"); d.className="dot"+(k<i?" seen":"")+(k===i?" cur":""); dots.appendChild(d); });
+}
+
+function tagClass(t){ return t.toLowerCase(); }
+
+function buildSentence(){
+  const s = S[i];
+  latinEl.textContent = s.latin;
+  curEl.textContent = i+1;
+  stage.innerHTML = "";
+  s.clauses.forEach(c=>{
+    const wrap=document.createElement("div"); wrap.className="clause";
+    wrap.innerHTML =
+      `<div class="clause-head"><span class="clause-tag">${c.tag}</span></div>
+       <div class="clause-latin">${c.latin}</div>
+       <div class="rows">
+         <div class="row" data-step="1">
+           <span class="tag ${tagClass(c.verb.t)}">${c.verb.t}</span>
+           <span class="role">werkwoord</span>
+           <span class="word">${c.verb.w}</span>
+           <span class="gloss">${c.verb.nl}</span>
+         </div>
+         <div class="row" data-step="2">
+           <span class="tag ow">OW</span>
+           <span class="role">onderwerp${c.subj.exp?"":" (niet uitgedrukt)"}</span>
+           <span class="word${c.subj.exp?"":" implicit"}">${c.subj.w}</span>
+           <span class="gloss">${c.subj.nl}</span>
+         </div>
+         ${c.obj.map(o=>`
+           <div class="row" data-step="3">
+             <span class="tag ${tagClass(o.r)}">${o.r}</span>
+             <span class="role">${roleName(o.r)}</span>
+             <span class="word">${o.w}</span>
+             <span class="gloss">${o.nl}</span>
+           </div>`).join("")}
+         <div class="note" data-step="3">${c.note}</div>
+       </div>`;
+    stage.appendChild(wrap);
+  });
+  transTxt.textContent = s.dutch;
+  transBox.hidden = true;
+  buildDots();
+}
+
+function roleName(r){
+  return {LV:"lijdend voorwerp",MV:"meewerkend voorwerp",NWD:"naamwoordelijk deel"}[r]||r;
+}
+
+function showTier(n){
+  if(n===4){ transBox.hidden=false; transBox.classList.add("reveal"); return; }
+  stage.querySelectorAll(`[data-step="${n}"]`).forEach(el=>{
+    el.style.display = el.classList.contains("note") ? "block" : "flex";
+    el.classList.add("reveal");
+  });
+}
+
+function refreshChrome(){
+  document.querySelectorAll(".spine li").forEach(li=>{
+    const n=+li.dataset.spine; li.classList.toggle("done",n<=step); li.classList.toggle("active",n===step+1 && step<4);
+  });
+  helper.innerHTML = HELP[step];
+  btnReset.hidden = step===0;
+  const labels=["Toon de werkwoorden","Toon het onderwerp","Toon de voorwerpen","Toon de vertaling"];
+  if(step<4){ btnNext.textContent = labels[step]; }
+  else { btnNext.textContent = (i===S.length-1) ? "Opnieuw vanaf zin 1" : "Volgende zin →"; }
+  btnPrev.disabled = i===0;
+  btnNextSent.disabled = i===S.length-1;
+}
+
+function advance(){
+  if(step<4){ step++; showTier(step); }
+  else {
+    if(i===S.length-1){ i=0; } else { i++; }
+    step=0; buildSentence();
+  }
+  refreshChrome();
+}
+function resetSentence(){ step=0; buildSentence(); refreshChrome(); }
+function gotoSentence(d){
+  const ni=i+d; if(ni<0||ni>=S.length) return;
+  i=ni; step=0; buildSentence(); refreshChrome();
+}
+
+btnNext.addEventListener("click",advance);
+btnReset.addEventListener("click",resetSentence);
+btnPrev.addEventListener("click",()=>gotoSentence(-1));
+btnNextSent.addEventListener("click",()=>gotoSentence(1));
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="BUTTON"&&e.key==="Enter")return;
+  if(e.key==="ArrowRight"){ advance(); }
+  if(e.key==="ArrowLeft"){ gotoSentence(-1); }
+});
+
+buildSentence();
+refreshChrome();
+</script>
+</body>
+</html>
